@@ -1,24 +1,56 @@
-# Trajectory Classification Using Dual-CSA
-This project is the code of the paper _Dual Supervised Autoencoder Based Trajectory Classification Using Enhanced Spatio-Temporal Information_  
-The paper is available at: https://ieeexplore.ieee.org/document/9204708/
+## Adversarial Attack and Defense Methods for Trajectory
+
+## Classifification
+
+This project is a code for the paper "*Adversarial Attack and Defense Methods for Trajectory*
+
+*Classifification*". 
+The codebase for this project has been updated based on the code from *https://github.com/lusccc/Trajectory-Classification-using-Dual-CSA*. Additional operations include incorporating adversarial attacks and defenses for data.
 
 ## Abstract
-With the rapid development of mobile internet and location awareness techniques, massive spatio-temporal data is collected every day. Trajectory classification is critically important to many
-real-world applications such as human mobility understanding, urban planning, and intelligent transportation systems. A growing number of studies took advantage of the deep learning method to learn the
-high-level features of trajectory data for accurate estimation. However, some of these studies didn’t interpret
-spatio-temporal information well, more importantly, they didn’t fully utilize the high-level features extracted
-by neural networks. To overcome these drawbacks, this paper utilizes the proposed stop state and turn state
-to enhance spatial information, and at the same time, extracts stronger time information via Recurrence Plot
-(RP). Moreover, a novel Dual Convolutional neural networks based Supervised Autoencoder (Dual-CSA)
-is proposed by making the network aware of Predefined Class Centroids (PCC). Experiments conducted
-on two real-world datasets demonstrate that Dual-CSA can learn the high-level features well. The highest
-accuracy of the Geolife and SHL datasets are 89.475% and 89.602%, respectively, proving the superiority
-of our method.
+In current adversarial attack methods for trajectory classifification, black box at
 
-## Framework Overview
-![avatar](framework.png)
+tack or single gradient update is commonly used to launch an attack. The attack
+
+method acts on the original trajectory data, ignoring the impact of trajectory
+
+features on the classifification results, and the adversarial sample attack methods
+
+for trajectory classifification often fail to achieve better results. To fifill this gap,
+
+this paper proposes an adversarial attack that adds perturbations to the tra
+
+jectory features. Specififically, trajectory features are extracted based on spatial
+
+coding technology’s trajectory feature extraction method. Secondly, MMOE
+
+model is used to obtain the inflfluence weights of trajectory features on trajec
+
+tory classifification model. Then, the slightest possible perturbation is added to
+
+features according to feature weights to achieve a better attack effffect. In addi
+
+tion, we design an adversarial defense method, based on a difffferential privacy
+
+mechanism. It adds Laplace noise to trajectory features, and achieves adver
+
+sarial defense through inverse transformation operation of trajectory features.
+
+Finally, we conduct experiments on real-world datasets. Experimental results
+
+show that the generated adversarial samples can achieve a good attack effffect
+
+while designed defense model improves the robustness of trajectory classifification
+
+model. 
+
+## Adversarial Attack and Adversarial Defense Framework
+![avatar](attack.png)
+
+![avatar](defense.png)
 
 ## Highlights of The Code ✨
+
 - Complete code support from preprocessing to results visualization. In particular, the preprocessing code is easy to migrate to other dataset.
 - Most of the code is commented with detail explanation.
 - The preprocessing support multi-process to speed up running time.
@@ -42,6 +74,9 @@ of our method.
 - `keras_support_old/` is the implementations of our model using keras, note we will not maintain keras version of our model any more.
 - `results/` all training and predict results will be saved at this place.
 - `visualization_and_analysis/` includes python code to draw some charts of experimental results in the paper.
+- `resultA/` experimental evaluation of adversarial attack and adversarial defense in terms of accuracy.
+- `resultB/` experimental evaluation of adversarial attack and adversarial defense in terms of loss.
+- `resultC/` experimental evaluation of adversarial attack and adversarial defense in terms of recall.
 
 
 # Detail Usage for Each File  
@@ -54,12 +89,12 @@ $ export RES_PATH=${results_path}
 - `trajectory_segmentation_and_features_extraction.py` is used to segment the trajectory and extract movement features (MFs) and auxiliary features (AFs) for train or test set. For example:  
 ```
 python ./trajectory_segmentation_and_features_extraction.py --trjs_path ./data/geolife_extracted/trjs_train.npy --labels_path ./data/geolife_extracted/labels_train.npy --seg_size 200 --data_type train --save_dir ./data/geolife_features
-``` 
+```
 where `seg_size` is max number of points in a segment.
 - `MF_RP_mat_h5support.py` is used to generate RPs for feature segments generated above. For example: 
  ````
  python ./MF_RP_mat_h5support.py --dim 3 --tau 8 --multi_feature_segs_path ./data/geolife_features/multi_feature_segs_train.npy --save_path ./data/geolife_features/multi_channel_RP_mats_train.h5
-````
+ ````
 where `dim` is embedding dimension & `tau` is the time delay in phase space reconstruction.
 
 - `PEDCC.py` is used to generate the predefined evenly-distributed class centroids using the code of paper _A Classification Supervised Auto-Encoder Based on Predefined Evenly-Distributed Class Centroids_. For example:  
@@ -141,8 +176,8 @@ Example usage for multiple nodes:
    - Node 0:  
    ```
 python network_training.py --dataset SHL --results-path ./results/exp1  --RP-emb-dim 152 --FS-emb-dim 152 --patience 20 --dist-url tcp://127.0.0.1:6666 --dist-backend nccl --multiprocessing-distributed --world-size 2 --rank 0 -b 230
-   ```  
-    
+   ```
+
    - Node 1:  
    ```
 python network_training.py --dataset SHL --results-path ./results/exp1  --RP-emb-dim 152 --FS-emb-dim 152 --patience 20 --dist-url tcp://127.0.0.1:6666 --dist-backend nccl --multiprocessing-distributed --world-size 2 --rank 0 -b 230 
@@ -152,18 +187,19 @@ Example usage for CPU (Slow):
 python network_training.py --dataset SHL --results-path ./results/exp1  --RP-emb-dim 152 --FS-emb-dim 152 --patience 20 -b 230 
 ```
 
-# Use as a Pipeline Script
-This is a shell script run under `exp_scripts`
-```
-cd ..
-dataset='geolife'
-results_path=./results/exp
-export RES_PATH=${results_path}
-python ./trajectory_segmentation_and_features_extraction.py --trjs_path ./data/SHL_extracted/trjs_train.npy --labels_path ./data/SHL_extracted/labels_train.npy --seg_size 200 --data_type train --save_dir ./data/SHL_features
-python ./trajectory_segmentation_and_features_extraction.py --trjs_path ./data/SHL_extracted/trjs_test.npy --labels_path ./data/SHL_extracted/labels_test.npy --seg_size 200 --data_type test --save_dir ./data/SHL_features
-python ./MF_RP_mat_h5support.py --dim 3 --tau 8 --multi_feature_segs_path ./data/SHL_features/multi_feature_segs_train.npy --save_path ./data/SHL_features/multi_channel_RP_mats_train.h5
-python ./MF_RP_mat_h5support.py --dim 3 --tau 8 --multi_feature_segs_path ./data/SHL_features/multi_feature_segs_test.npy --save_path ./data/SHL_features/multi_channel_RP_mats_test.h5
-python ./PEDCC.py --save_dir ./data/SHL_features --dim 304
-python network_training.py --dataset ${dataset} --results-path ${results_path}  --RP-emb-dim 152 --FS-emb-dim 152 --patience 20 --dist-url tcp://127.0.0.1:6666 --dist-backend nccl --multiprocessing-distributed --world-size 1 --rank 0 -b 230
-```
-#### Feel free to post issues if you have any questions. (English and Chinese 中文)
+# 
+## Adversarial Attack and Adversarial Defense
+
+`python attack1.py`adversarial attacks through uniform perturbation of trajectory features in the geolife dataset.
+
+`python attack2.py`Adversarial attack using FGSM (Fast Gradient Sign Method) on trajectory features in the geolife dataset.
+
+`python attack3.py`Adversarial attacks through uniform perturbation of trajectory features in the SHL dataset.
+
+`python attack4.py`Adversarial attack using FGSM (Fast Gradient Sign Method) on trajectory features in the SHL dataset.
+
+`python CW.py`adversarial attack using the CW (Carlini-Wagner) method on the dataset.
+
+`python defense.py`implementing adversarial defense by incorporating Laplace noise generated through differential privacy mechanisms into trajectory features.
+
+`python graph.py`generating plots based on experimental results for evaluation metrics such as accuracy, loss values, recall, etc., using both the complete set of features and a subset of features.
